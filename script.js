@@ -90,6 +90,23 @@ function clearItems() {
   checkUi();
 }
 
+// a function to filter li based on input
+function filterItems(e) {
+  const li = document.querySelectorAll(".item");
+  const text = e.target.value.toLowerCase();
+
+  li.forEach((item) => {
+    const itemName = item.firstChild.textContent.toLowerCase();
+
+    // text passed in will check the itemName and if anyone matches, we get true and if none matches it's false (-1)
+    if (itemName.indexOf(text) != -1) {
+      item.style.display = "flex";
+    } else {
+      item.style.display = "none";
+    }
+  });
+}
+
 //  a function to display the CLEAR ALL BTN and FILTER ITEMS only if there's an item in ul
 function checkUi() {
   const li = document.querySelectorAll(".item");
@@ -106,5 +123,6 @@ function checkUi() {
 itemForm.addEventListener("submit", addItem);
 itemList.addEventListener("click", removeItem);
 clearButton.addEventListener("click", clearItems);
+filter.addEventListener("input", filterItems);
 
 checkUi();
