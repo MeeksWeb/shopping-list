@@ -3,8 +3,34 @@ const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
 const clearButton = document.getElementById("clear");
 const filter = document.getElementById("filter");
+const formBtn = itemForm.querySelector("button");
+let isEditMode = false;
 
-function addItem(e) {
+// LocalStorage
+function displayItems() {
+  const itemsFromStorage = getItemsFromStorage();
+  // itemsFromStorage.forEach(item => addItemToDom(item)); OR
+  itemsFromStorage.forEach((item) => {
+    // create list item
+    const li = document.createElement("li");
+    li.appendChild(document.createTextNode(item));
+    li.className = "item";
+
+    // button function called
+    const button = createButton("remove-item btn-link text-red");
+
+    // icon function called
+    const icon = createIcon("fa-solid fa-xmark");
+
+    // append all
+    button.appendChild(icon);
+    li.appendChild(button);
+    itemList.appendChild(li);
+  });
+  checkUi();
+}
+
+function onAddItemSubmit(e) {
   e.preventDefault();
 
   const newItem = itemInput.value;
@@ -13,6 +39,24 @@ function addItem(e) {
   if (newItem === "") {
     alert("Please add an item");
     return;
+  }
+
+  // addItemToDom(newItem);
+
+  //check for edit mode
+  if (isEditMode) {
+    //get the li been edited
+    const itemToEdit = itemList.querySelector(".edit-mode");
+
+    //remove it from localstorage
+    removeItemFromStorage(itemToEdit.textContent);
+    //remove the class
+    itemToEdit.classList.remove("edit-mode");
+    //remove from dom
+    itemToEdit.remove();
+
+    //make editing false
+    isEditMode = false;
   }
 
   // create list item
@@ -30,6 +74,9 @@ function addItem(e) {
   button.appendChild(icon);
   li.appendChild(button);
   itemList.appendChild(li);
+
+  // call the localstorage function
+  addItemToStorage(newItem);
 
   checkUi();
 
@@ -52,22 +99,117 @@ function createIcon(classes) {
   return icon;
 }
 
-// REMOVE ITEM FUNCTION
-// I will be using event delegation to target the parent(ui) to get to the child(li)
-function removeItem(e) {
-  const targetParent = e.target.parentElement;
-  if (targetParent.classList.contains("remove-item")) {
-    // e.target; // gives you the icon
-    // e.target.parentElement; // gives you the icon parent (button)
-    // e.target.parentElement.parentElement; // gives you the button parent (li)
+// function addItemToDom(item) {
+//   // create list item
+//   const li = document.createElement("li");
+//   li.appendChild(document.createTextNode(item));
+//   li.className = "item";
 
-    // confirm is a built in method, pops up when you click the remove btn
-    if (confirm("Are you sure?")) {
-      e.target.parentElement.parentElement.remove();
-      checkUi();
-    }
+//   // button function called
+//   const button = createButton("remove-item btn-link text-red");
+
+//   // icon function called
+//   const icon = createIcon("fa-solid fa-xmark");
+
+//   // append all
+//   button.appendChild(icon);
+//   li.appendChild(button);
+//   itemList.appendChild(li);
+// }
+
+function addItemToStorage(item) {
+  //create a variable and check if there are items in storage before you start adding
+  // let itemsFromStorage;
+
+  //after creating getItemFromStorage function, then change the let to const and set it to the function. Then create an event listener for when the page loads
+  let itemsFromStorage = getItemsFromStorage();
+
+  if (localStorage.getItem("items") === null) {
+    itemsFromStorage = []; // if there are none then start adding from 0
+  } else {
+    // if there are, get them to start adding with them
+    // itemsFromStorage = localStorage.getItem("items");
+
+    // above will give you results as strings but we need them as array so we parse them
+    itemFromStorage = JSON.parse(localStorage.getItem("items"));
+  }
+
+  itemsFromStorage.push(item); // once we get them as array, we then add ours to them
+
+  //after adding ours we convert them back to JSON String and send back to local storage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+function getItemsFromStorage() {
+  let itemsFromStorage;
+  if (localStorage.getItem("items") === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem("items"));
+  }
+  return itemsFromStorage;
+}
+
+// a function for two purpose depending on where was clicked
+function onClickItem(e) {
+  if (e.target.parentElement.classList.contains("remove-item")) {
+    removeItem(e.target.parentElement.parentElement);
+  } else {
+    setItemToEdit(e.target);
+    // console.log(e.target.textContent);
   }
 }
+
+function setItemToEdit(item) {
+  isEditMode = true;
+
+  itemList.querySelectorAll("li").forEach((element) => {
+    element.classList.remove("edit-mode"); // this prevents multiple gray out on click, when one is grayed out already and you click on another, the previous one changes to default black
+  });
+  item.classList.add("edit-mode");
+  formBtn.innerHTML = "<i class='fa-solid fa-pen'></i> Update Item";
+  formBtn.style.backgroundColor = "#228b22";
+  itemInput.value = item.textContent;
+}
+
+function removeItem(item) {
+  if (confirm("Are you sure?")) {
+    //remove item from DOM
+    item.remove();
+
+    //remove item from storage
+    removeItemFromStorage(item.textContent);
+
+    checkUi();
+  }
+}
+
+function removeItemFromStorage(item) {
+  let itemsFromStorage = getItemsFromStorage();
+
+  //filter out item to be removed
+  itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
+
+  //reset to localstorage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+// REMOVE ITEM FUNCTION
+// I will be using event delegation to target the parent(ui) to get to the child(li)
+// function removeItem(e) {
+//   const targetParent = e.target.parentElement;
+//   if (targetParent.classList.contains("remove-item")) {
+//     // e.target; // gives you the icon
+//     // e.target.parentElement; // gives you the icon parent (button)
+//     // e.target.parentElement.parentElement; // gives you the button parent (li)
+
+//     // confirm is a built in method, pops up when you click the remove btn
+//     if (confirm("Are you sure?")) {
+//       e.target.parentElement.parentElement.remove();
+//       checkUi();
+//     }
+//   }
+// }
 
 function clearItems() {
   // itemList.innerHTML = "" // fast method
@@ -87,6 +229,15 @@ function clearItems() {
   while (itemList.firstChild) {
     itemList.removeChild(itemList.firstChild);
   }
+
+  //clear from localstorage
+
+  // localStorage.clear()
+
+  //OR
+
+  localStorage.removeItem("items");
+
   checkUi();
 }
 
@@ -109,6 +260,9 @@ function filterItems(e) {
 
 //  a function to display the CLEAR ALL BTN and FILTER ITEMS only if there's an item in ul
 function checkUi() {
+  itemInput.value = "";
+
+  //starts here
   const li = document.querySelectorAll(".item");
   if (li.length === 0) {
     clearButton.style.display = "none";
@@ -116,13 +270,20 @@ function checkUi() {
   } else {
     clearButton.style.display = "block";
     filter.style.display = "block";
-  }
+  } // stops here
+
+  //for updating the add button back to default after clicking on th update item
+  formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
+  formBtn.style.backgroundColor = "#333";
+  isEditMode = false;
 }
 
 // Event Listeners
-itemForm.addEventListener("submit", addItem);
-itemList.addEventListener("click", removeItem);
+itemForm.addEventListener("submit", onAddItemSubmit);
+// itemList.addEventListener("click", removeItem);
+itemList.addEventListener("click", onClickItem);
 clearButton.addEventListener("click", clearItems);
 filter.addEventListener("input", filterItems);
+document.addEventListener("DOMContentLoaded", displayItems); // LocalStorage
 
 checkUi();
