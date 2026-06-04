@@ -55,8 +55,20 @@ function onAddItemSubmit(e) {
     //remove from dom
     itemToEdit.remove();
 
+    //for updating the add button back to default after clicking on th update item
+    formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
+    formBtn.style.backgroundColor = "#333";
+
+    //empty input
+    itemInput.value = "";
+
     //make editing false
     isEditMode = false;
+  } else {
+    if (checkIfItemExist(newItem)) {
+      alert("Item already exists!");
+      return;
+    }
   }
 
   // create list item
@@ -122,17 +134,21 @@ function addItemToStorage(item) {
   // let itemsFromStorage;
 
   //after creating getItemFromStorage function, then change the let to const and set it to the function. Then create an event listener for when the page loads
-  let itemsFromStorage = getItemsFromStorage();
+  const itemsFromStorage = getItemsFromStorage();
 
-  if (localStorage.getItem("items") === null) {
-    itemsFromStorage = []; // if there are none then start adding from 0
-  } else {
-    // if there are, get them to start adding with them
-    // itemsFromStorage = localStorage.getItem("items");
+  // from here (
+  // if (localStorage.getItem("items") === null) {
+  //   itemsFromStorage = []; // if there are none then start adding from 0
+  // } else {
+  //   // if there are, get them to start adding with them
+  //   // itemsFromStorage = localStorage.getItem("items");
+  //   // above will give you results as strings but we need them as array so we parse them
+  //   itemFromStorage = JSON.parse(localStorage.getItem("items"));
+  // }
+  //to here )
 
-    // above will give you results as strings but we need them as array so we parse them
-    itemFromStorage = JSON.parse(localStorage.getItem("items"));
-  }
+  //READ THIS
+  //ideally its advised to create function to get item from storage first, use let as initial value inside it, then create function to add item to storage and inside it first create a variable with const that holds the results gotten from getItemFromStorage function. Then you can push the item to it and send it back to localstorage as string
 
   itemsFromStorage.push(item); // once we get them as array, we then add ours to them
 
@@ -258,10 +274,19 @@ function filterItems(e) {
   });
 }
 
+// a function to prevent item duplicate
+function checkIfItemExist(item) {
+  const itemFromStorage = getItemsFromStorage();
+
+  if (itemFromStorage.includes(item)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 //  a function to display the CLEAR ALL BTN and FILTER ITEMS only if there's an item in ul
 function checkUi() {
-  itemInput.value = "";
-
   //starts here
   const li = document.querySelectorAll(".item");
   if (li.length === 0) {
@@ -272,9 +297,9 @@ function checkUi() {
     filter.style.display = "block";
   } // stops here
 
-  //for updating the add button back to default after clicking on th update item
-  formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
-  formBtn.style.backgroundColor = "#333";
+  // //for updating the add button back to default after clicking on th update item
+  // formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
+  // formBtn.style.backgroundColor = "#333";
   isEditMode = false;
 }
 
