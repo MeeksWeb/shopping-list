@@ -48,16 +48,12 @@ function onAddItemSubmit(e) {
     //get the li been edited
     const itemToEdit = itemList.querySelector(".edit-mode");
 
-    //remove it from localstorage
-    removeItemFromStorage(itemToEdit.textContent);
     //remove the class
     itemToEdit.classList.remove("edit-mode");
+    //remove it from localstorage
+    removeItemFromStorage(itemToEdit.textContent);
     //remove from dom
     itemToEdit.remove();
-
-    //for updating the add button back to default after clicking on th update item
-    formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
-    formBtn.style.backgroundColor = "#333";
 
     //empty input
     itemInput.value = "";
@@ -228,7 +224,9 @@ function removeItemFromStorage(item) {
 // }
 
 function clearItems() {
-  // itemList.innerHTML = "" // fast method
+  if (confirm("Are you sure?")) {
+    itemList.innerHTML = "" // fast method
+  }
 
   // method 2, get all the li
   //   const li = document.querySelectorAll(".item");
@@ -242,9 +240,13 @@ function clearItems() {
   //   }
 
   // method 3, use the ul
-  while (itemList.firstChild) {
-    itemList.removeChild(itemList.firstChild);
-  }
+  // while (itemList.firstChild) {
+  //   if (confirm("Are you sure?")) {
+
+  //     itemList.removeChild(itemList.firstChild);
+  // }
+
+  // }
 
   //clear from localstorage
 
@@ -298,8 +300,8 @@ function checkUi() {
   } // stops here
 
   // //for updating the add button back to default after clicking on th update item
-  // formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
-  // formBtn.style.backgroundColor = "#333";
+  formBtn.innerHTML = "<i class='fa-solid fa-plus'></i> Add Item";
+  formBtn.style.backgroundColor = "#333";
   isEditMode = false;
 }
 
